@@ -39,6 +39,17 @@
   /* Elevation */
   --shadow-soft: 0 10px 30px -12px rgba(58, 44, 50, 0.18);
   --shadow-lift: 0 20px 45px -15px rgba(58, 44, 50, 0.28);
+
+  /* Layer order — keep every z-index on the site referencing this scale so
+     stacking-context bugs (like the header/scrim one this file just fixed)
+     can't creep back in silently. Higher = closer to the viewer. */
+  --z-floating: 500;   /* back-to-top / whatsapp buttons */
+  --z-scrim: 950;      /* mobile nav dimmed backdrop */
+  --z-header: 1000;    /* header, hamburger, slide-in nav panel — must stay
+                           above --z-scrim or the scrim will cover the
+                           toggle button once the menu is open */
+  --z-lightbox: 2000;  /* gallery lightbox — above everything */
+  --z-loader: 10000;   /* page loader — above everything, briefly */
 }
 
 /* -------------------------------- Reset ---------------------------------- */
@@ -148,8 +159,6 @@ section {
 }
 
 /* ----------------------------- Signature motif --------------------------- */
-/* The gold "stitch" underline — a running-stitch rule used beneath eyebrows
-   and section titles. Built once, reused everywhere. */
 .stitch {
   display: inline-block;
   width: 92px;
@@ -201,7 +210,7 @@ section {
   font-size: 1.02rem;
 }
 
-/* Gold corner-frame — echoes the stitched corner motif in the imagery */
+/* Gold corner-frame */
 .framed {
   position: relative;
 }
@@ -284,7 +293,7 @@ section {
 #loader {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: var(--z-loader);
   background: var(--ivory);
   display: flex;
   align-items: center;
@@ -327,12 +336,18 @@ section {
 }
 
 /* ---------------------------------- Header --------------------------------- */
+/* FIX: z-index now pulls from --z-header (1000), which is intentionally
+   higher than --z-scrim (950). Previously the header sat at 900 while the
+   mobile nav-scrim sat at 930 — the scrim rendered ABOVE the header once the
+   menu opened, covering the hamburger button so a second tap couldn't close
+   the menu. Everything inside <header> (the toggle, the slide-in panel)
+   inherits this higher stacking context automatically. */
 .site-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 900;
+  z-index: var(--z-header);
   padding: 1.3rem 0;
   transition: background var(--dur-med) var(--ease), padding var(--dur-med) var(--ease), box-shadow var(--dur-med) var(--ease);
 }
@@ -409,7 +424,9 @@ section {
   height: 40px;
   background: transparent;
   border: none;
-  z-index: 950;
+  position: relative;
+  z-index: 2; /* only needs to beat its header siblings — the header itself
+                 now handles the real cross-context ordering */
 }
 .nav-toggle span {
   display: block;
@@ -684,7 +701,7 @@ section {
   text-transform: uppercase;
 }
 
-/* Timeline (About page — a real sequence, so numbering is justified) */
+/* Timeline */
 .timeline {
   counter-reset: step;
   display: grid;
@@ -782,7 +799,6 @@ section {
   color: var(--gold-dark);
   text-align: center;
 }
-
 
 /* -------------------------------- Testimonials ------------------------------ */
 .testimonial-track {
@@ -990,7 +1006,7 @@ section {
 .lightbox {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: var(--z-lightbox);
   background: rgba(58, 44, 50, 0.92);
   display: flex;
   align-items: center;
@@ -1273,7 +1289,7 @@ section {
   visibility: hidden;
   transform: translateY(10px);
   transition: all var(--dur-fast) var(--ease);
-  z-index: 500;
+  z-index: var(--z-floating);
   box-shadow: var(--shadow-soft);
 }
 .back-to-top.is-visible {
@@ -1295,7 +1311,7 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 500;
+  z-index: var(--z-floating);
   box-shadow: var(--shadow-soft);
   transition: transform var(--dur-fast) var(--ease);
 }
